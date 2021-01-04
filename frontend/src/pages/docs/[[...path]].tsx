@@ -75,6 +75,7 @@ import Search from "src/components/Search";
 import { statSync } from "fs";
 import { execSync } from "child_process";
 import { concat, flow, indexOf, map } from "lodash/fp";
+import { isPreviewBuildtime } from "src/utils/isPreview";
 
 export async function getStaticProps(
   context: GetStaticPropsContext<{ path: string[] }>
@@ -148,13 +149,11 @@ export async function getStaticPaths() {
   // build-time process. Some additional checks are required in the Markdown
   // rendering code to bypass the standard behaviour of getting the content from
   // the API. See the `readLocaleDocs` function above for this logic.
-  if (process.env.VERCEL_ENV === "preview") {
+  if (isPreviewBuildtime()) {
     filterFn = buildOnlyChangedPages();
   } else {
     filterFn = buildOnlyLargePages(60000);
   }
-
-  console.log("ENV:", process.env); // TODO: Remove!
 
   const paths = glob
     .sync("../docs/meta/*.md") // read docs from the repo root
